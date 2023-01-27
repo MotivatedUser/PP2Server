@@ -1,45 +1,76 @@
 const express = require('express');
+const ForSale = require('../models/forSale');
+const authenticate = require('../authenticate');
+
 const forSalePageRouter = express.Router();
 
 forSalePageRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
-})
-.get((req, res) => {
-    res.end('Will send all of the for sale items to you');
-})
-.post((req, res) => {
-    res.end(`Will add the item: ${req.body.name} with the description: ${req.body.description}`);
-})
-.put((req, res) => {
-    res.statusCode = 403;
-    res.end('PUT operation not supported on /forSale');
-})
-.delete((req, res) => {
-    res.statusCode = 403;
-    res.end('DELETE operation not supported on /forSale. Login or Contact MowerTech at (509) 555-1212 to have machine removed');
-});
+    .get((req, res, next) => {
+        ForSale.find()
+        .then(forSale => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json(forSale);
+        })
+        .catch(err => next(err));
+    })
+    .post(authenticate.verifyUser, (req, res, next) => {
+        ForSale.create(req.body)
+        .then(forSale => {
+            console.log('Listing Created ', forSale);
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json(forSale);
+        })
+        .catch(err => next(err));
+    })
+    .put(authenticate.verifyUser, (req, res) => {
+        res.statusCode = 403;
+        res.end('PUT operation not supported on /forSale');
+    })
+    .delete(authenticate.verifyUser, (req, res, next) => {
+        ForSale.deleteMany()
+        .then(response => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json(response);
+        })
+        .catch(err => next(err));
+    });
 
 forSalePageRouter.route('/:id')
-.all((req, res, next) => {
+.get((req, res, next) => {
+    ForSale.findById(req.params.campsiteId)
+    .then(forSale => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(forSale);
+    })
+    .catch(err => next(err));
+})
+.post(authenticate.verifyUser, (req, res) => {
+    res.statusCode = 403;
+    res.end(`POST operation not supported on /forSalePage/${req.params.id}`);
+})
+.put(authenticate.verifyUser, (req, res, next ) => {
+    ForSale.findByIdAndUpdate(req.params.id, {
+        $set: req.body
+   }, { new: true})
+   .then(forSale => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+    res.setHeader('Content-Type', 'application/json');
+    res.json(forSale);
 })
-.get((req, res) => {
-    res.end('Will send the id item to you');
+.catch(err => next(err));
 })
-.post((req, res) => {
-    res.end(`Will add the item: ${req.body.name} with the description: ${req.body.description}`);
-})
-.put((req, res) => {
-    res.statusCode = 403;
-    res.end('PUT operation not supported on /forSale/:id');
-})
-.delete((req, res) => {
-    res.statusCode = 403;
-    res.end('DELETE operation not supported on /forSale/:id . Login or Contact MowerTech at (509) 555-1212 to have machine removed');
+.delete(authenticate.verifyUser, (req, res, next ) => {
+    ForSale.findByIdAndDelete(req.params.id)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
+
 module.exports = forSalePageRouter;
