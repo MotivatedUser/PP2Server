@@ -8,8 +8,8 @@ aboutPageRouter.route('/')
     next();
 })
 .get((req, res) => {
-    res.statusCode = 403;
-    res.end('GET operation not supported on /aboutPage');
+    
+    res.end(' /aboutPage');
 })
 .post((req, res) => {
     res.statusCode = 403;
