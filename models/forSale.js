@@ -43,7 +43,7 @@ const forSaleSchema = new Schema({
         required: true
     }
 }, {
-timestamps: true
+    timestamps: true
 });
 
 const ForSale = mongoose.model('ForSale', forSaleSchema);
