@@ -1,11 +1,13 @@
 const express = require('express');
 const ForSale = require('../models/forSale');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 const forSalePageRouter = express.Router();
 
 forSalePageRouter.route('/')
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         ForSale.find()
             .then(forSale => {
                 res.statusCode = 200;
@@ -14,7 +16,7 @@ forSalePageRouter.route('/')
             })
             .catch(err => next(err));
     })
-    .post(authenticate.verifyUser, (req, res, next) => {
+    .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
         ForSale.create(req.body)
             .then(forSale => {
                 console.log('Listing Created ', forSale);
@@ -24,11 +26,11 @@ forSalePageRouter.route('/')
             })
             .catch(err => next(err));
     })
-    .put(authenticate.verifyUser, (req, res) => {
+    .put(cors.corsWithOptions, authenticate.verifyUser,  authenticate.verifyAdmin, (req, res) => {
         res.statusCode = 403;
         res.end('PUT operation not supported on /forSale');
     })
-    .delete(authenticate.verifyUser, (req, res, next) => {
+    .delete(cors.corsWithOptions, authenticate.verifyUser,  authenticate.verifyAdmin, (req, res, next) => {
         ForSale.deleteMany()
             .then(response => {
                 res.statusCode = 200;
@@ -39,7 +41,8 @@ forSalePageRouter.route('/')
     });
 
 forSalePageRouter.route('/:id')
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+    .get(cors.cors, (req, res, next) => {
         ForSale.findById(req.params.campsiteId)
             .then(forSale => {
                 res.statusCode = 200;
@@ -48,11 +51,11 @@ forSalePageRouter.route('/:id')
             })
             .catch(err => next(err));
     })
-    .post(authenticate.verifyUser, (req, res) => {
+    .post(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
         res.statusCode = 403;
         res.end(`POST operation not supported on /forSalePage/${req.params.id}`);
     })
-    .put(authenticate.verifyUser, (req, res, next) => {
+    .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         ForSale.findByIdAndUpdate(req.params.id, {
             $set: req.body
         }, { new: true })
@@ -63,7 +66,7 @@ forSalePageRouter.route('/:id')
             })
             .catch(err => next(err));
     })
-    .delete(authenticate.verifyUser, (req, res, next) => {
+    .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         ForSale.findByIdAndDelete(req.params.id)
             .then(response => {
                 res.statusCode = 200;

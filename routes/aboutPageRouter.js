@@ -1,5 +1,6 @@
 const express = require('express');
 const aboutPageRouter = express.Router();
+const cors = require('./cors');
 
 aboutPageRouter.route('/')
     .all((req, res, next) => {
