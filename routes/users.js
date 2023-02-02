@@ -25,7 +25,7 @@ router.route('/')
 //   res.send('respond with a resource');
 // });
 
-router.post('/signup', (req, res) => {
+router.post('/signup', cors.corsWithOptions, (req, res) => {
   User.register(
     new User({username: req.body.username}),
     req.body.password,
