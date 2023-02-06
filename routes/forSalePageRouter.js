@@ -16,7 +16,7 @@ forSalePageRouter.route('/')
             })
             .catch(err => next(err));
     })
-    .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+    .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         ForSale.create(req.body)
             .then(forSale => {
                 console.log('Listing Created ', forSale);
@@ -67,7 +67,16 @@ forSalePageRouter.route('/:id')
             .catch(err => next(err));
     })
     .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
-        ForSale.findByIdAndDelete(req.params.id)
+        ForSale.findById(req.params.id)
+            .then(post => {
+                if (!post) {
+                    return res.status(404).json({message: "Post not found"});
+                }
+                if (post.author.toString() !== req.user._id.toString()) {
+                    return res.status(403).json({message: "You are not authorized to delete this post"});
+                }
+                return post.remove();
+            })
             .then(response => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');
@@ -75,5 +84,15 @@ forSalePageRouter.route('/:id')
             })
             .catch(err => next(err));
     });
+    
+    // .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
+    //     ForSale.findByIdAndDelete(req.params.id)
+    //         .then(response => {
+    //             res.statusCode = 200;
+    //             res.setHeader('Content-Type', 'application/json');
+    //             res.json(response);
+    //         })
+    //         .catch(err => next(err));
+    // });
 
 module.exports = forSalePageRouter;
